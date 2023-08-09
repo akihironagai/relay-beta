@@ -9,7 +9,7 @@ from_local_proxy_packet: queue.Queue[bytes] = queue.Queue()
 from_remote_vpn_packet: queue.Queue[bytes] = queue.Queue()
 
 context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-context.load_cert_chain(f'{config.REMOTE_VPN_ADDRESS[0]}.pem', f'{config.REMOTE_VPN_ADDRESS[0]}-key.pem')
+context.load_cert_chain(f'{config.REMOTE_PROXY_ADDRESS[0]}.pem', f'{config.REMOTE_PROXY_ADDRESS[0]}-key.pem')
 
 def local_proxy_to_remote_proxy():
     with socket.create_server(config.TCP_TUNNEL) as sock:
