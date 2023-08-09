@@ -1,6 +1,5 @@
 import socket
 import ssl
-import time
 
 import config
 
@@ -14,6 +13,10 @@ with socket.create_server(config.REMOTE_PROXY_ADDRESS) as sock:
         conn.setblocking(False)
         while True:
             try:
-                print(conn.recv(1024))
+                data = conn.recv(1024)
+                if data:
+                    print(f"[S] Local Proxy -> *Remote Proxy: {data}")
+                    print(f"[S] *Remote Proxy -> Local Proxy: {data}")
+                    conn.sendall(data + b" [ECHO]")
             except ssl.SSLWantReadError:
                 pass

@@ -6,12 +6,10 @@ import queue
 
 import config
 
-client_proxy_vpn_side_packet: queue.Queue[bytes] = queue.Queue()
-client_proxy_proxy_side_packet: queue.Queue[bytes] = queue.Queue()
+from_remote_proxy_packet: queue.Queue[bytes] = queue.Queue()
+from_local_vpn_packet: queue.Queue[bytes] = queue.Queue()
 
-
-def client_proxy_proxy_side():
-    print("Client Proxy Proxy Side")
+def local_proxy_to_remote_proxy():
     address = config.REMOTE_PROXY_ADDRESS
     context = ssl.create_default_context(
         cafile=os.getenv("SSL_CA_CERT_FILE"),
@@ -27,37 +25,35 @@ def client_proxy_proxy_side():
                 except ssl.SSLWantReadError:
                     data = None
                 if data:
-                    print(f"[C] Remote Proxy -> Local Proxy: {data}")
-                    client_proxy_proxy_side_packet.put(data)
-                if not client_proxy_vpn_side_packet.empty():
-                    data = client_proxy_vpn_side_packet.get()
-                    # TODO: 正しく送信できた場合のみ Queue から削除する
-                    # VPN -> Proxy
-                    ssock.sendall(client_proxy_vpn_side_packet.get())
+                    print(f"[C] Remote Proxy -> *Local Proxy: {data}")
+                    from_remote_proxy_packet.put(data)
+                if not from_local_vpn_packet.empty():
+                    local_data = from_local_vpn_packet.get()
+                    print(f"[C] *Local Proxy -> Remote Proxy: {local_data}")
+                    ssock.sendall(local_data)
 
 
-def client_proxy_vpn_side():
-    print("Client Proxy VPN Side")
+def local_vpn_to_local_proxy():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         sock.bind(config.LOCAL_PROXY_ADDRESS)
-        #  sock.setblocking(False)
+        while True:
+            data, _ = sock.recvfrom(2048)
+            print(f"[C] Local VPN -> *Local Proxy: {data}")
+            from_local_vpn_packet.put(data)
+
+
+def local_proxy_to_local_vpn():
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         while True:
             try:
-                data, addr = sock.recvfrom(2048)
-            except BlockingIOError:
-                data = None
-            if data:
-                print(f"[C] Local VPN -> Local Proxy: {data}")
-                client_proxy_vpn_side_packet.put(data)
-            if not client_proxy_proxy_side_packet.empty():
-                # Proxy -> VPN
-                sock.sendto(
-                    client_proxy_proxy_side_packet.get(), config.REMOTE_PROXY_ADDRESS
-                )
+                data = from_remote_proxy_packet.get()
+            except queue.Empty:
+                continue
+            print(f"[C] *Local Proxy -> Local VPN: {data}")
+            sock.sendto(data, config.LOCAL_VPN_ADDRESS)
 
 
 if __name__ == "__main__":
-    proxy_side_thread = threading.Thread(target=client_proxy_proxy_side)
-    vpn_side_thread = threading.Thread(target=client_proxy_vpn_side)
-    proxy_side_thread.start()
-    vpn_side_thread.start()
+    threading.Thread(target=local_proxy_to_remote_proxy).start()
+    threading.Thread(target=local_vpn_to_local_proxy).start()
+    threading.Thread(target=local_proxy_to_local_vpn).start()
