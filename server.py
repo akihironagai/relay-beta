@@ -1,6 +1,5 @@
 import socket
 import ssl
-import os
 import threading
 import queue
 
