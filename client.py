@@ -10,7 +10,7 @@ from_remote_proxy_packet: queue.Queue[bytes] = queue.Queue()
 from_local_vpn_packet: queue.Queue[bytes] = queue.Queue()
 
 def local_proxy_to_remote_proxy():
-    address = config.REMOTE_PROXY_ADDRESS
+    address = config.TCP_TUNNEL
     context = ssl.create_default_context(
         cafile=os.getenv("SSL_CA_CERT_FILE"),
     )
