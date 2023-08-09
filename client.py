@@ -1,6 +1,5 @@
 import socket
 import ssl
-import time
 import os
 
 hostname = '127.0.0.1'
@@ -11,6 +10,10 @@ context = ssl.create_default_context(
 with socket.create_connection((hostname, 8443)) as sock:
     with context.wrap_socket(sock, server_hostname=hostname) as ssock:
         print(ssock.version())
+        ssock.setblocking(False)
         while True:
-            ssock.send(b"hello world\n")
-            time.sleep(1)
+            ssock.send(b"hello client\n")
+            try:
+                print(ssock.recv(1024))
+            except ssl.SSLWantReadError:
+                pass

@@ -8,5 +8,10 @@ with socket.create_server(('127.0.0.1', 8443)) as sock:
     sock.listen(5)
     with context.wrap_socket(sock, server_side=True) as ssock:
         conn, addr = ssock.accept()
+        conn.setblocking(False)
         while True:
-            print(conn.recv(1024))
+            conn.send(b"hello server\n")
+            try:
+                print(conn.recv(1024))
+            except ssl.SSLWantReadError:
+                pass
