@@ -15,7 +15,7 @@ def local_proxy_to_remote_proxy():
     with socket.create_server(("0.0.0.0", config.TCP_TUNNEL_PORT)) as sock:
         sock.listen(5)
         with context.wrap_socket(sock, server_side=True) as ssock:
-            conn, addr = ssock.accept()
+            conn, _ = ssock.accept()
             conn.setblocking(False)
             while True:
                 try: data = conn.recv(1024)
@@ -30,7 +30,7 @@ def local_proxy_to_remote_proxy():
 
 def remote_vpn_and_remote_proxy():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        sock.bind(config.REMOTE_PROXY_ADDRESS)
+        sock.bind(("0.0.0.0", config.REMOTE_PROXY_ADDRESS[1]))
 
         def recv():
             while True:
