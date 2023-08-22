@@ -2,6 +2,16 @@
 
 It allows you to use WireGuard when your ISP or network administrator blocks WireGuard connections by wrapping WireGuard packets in TLS packets.
 
+# How it works?
+
+```text
++------------------------------------+
+|  +-----------+   +--------------+  |  +--------------+   +-----------+
+|  | WG Client |<->| Relay Client |<--->| Relay Server |<->| WG Server |
+|  +-----------+   +--------------+  |  +--------------+   +-----------+
++------------------------------------+
+```
+
 ## Usage
 
 Note that you have to configure a WireGuard server because this script only wraps WireGuard packets in TLS packets and forwards them to the WireGuard server.
