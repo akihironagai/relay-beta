@@ -1,4 +1,4 @@
-# WireGuard over TLS
+# WireGuard over TLS Relay System
 
 It allows you to use WireGuard when your ISP or network administrator blocks WireGuard connections by wrapping WireGuard packets in TLS packets.
 
