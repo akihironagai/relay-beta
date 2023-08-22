@@ -2,7 +2,7 @@
 
 It allows you to use WireGuard when your ISP or network administrator blocks WireGuard connections by wrapping WireGuard packets in TLS packets.
 
-# How it works?
+# How does it work?
 
 ```text
 +------------------------------------+
